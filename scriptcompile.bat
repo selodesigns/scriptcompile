@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ===================================================
-echo ScriptCompile Command - Installer
+echo ScriptCompile Command - Improved Installer
 echo ===================================================
 echo.
 
@@ -72,12 +72,35 @@ echo.
 echo :: Initialize counter
 echo set "FileCount=0"
 echo.
-echo :: Loop through each file extension and process files
+echo :: Create a temporary file to store the list of files
+echo set "TEMP_FILE=%%TEMP%%\scriptcompile_filelist.txt"
+echo if exist "%%TEMP_FILE%%" del /q "%%TEMP_FILE%%"
+echo.
+echo :: Generate a list of files that actually exist
 echo for %%%%E in ^(%%FILE_EXTENSIONS%%^) do ^(
-echo     for /r "%%START_DIR%%" %%%%F in ^(%%%%E^) do ^(
+echo     dir /b /s "%%START_DIR%%%%%%E" 2^>nul ^>^> "%%TEMP_FILE%%"
+echo ^)
+echo.
+echo :: Check if we found any files
+echo if not exist "%%TEMP_FILE%%" ^(
+echo     echo No matching files found.
+echo     echo No matching files found. ^>^> "%%OUTPUT_FILE%%"
+echo     goto :end
+echo ^)
+echo.
+echo :: Check if the file is empty
+echo for /f "tokens=* usebackq" %%%%a in ^("%%TEMP_FILE%%"^) do goto :process_files
+echo echo No matching files found.
+echo echo No matching files found. ^>^> "%%OUTPUT_FILE%%"
+echo goto :end
+echo.
+echo :process_files
+echo :: Process each file in the list
+echo for /f "tokens=* usebackq delims=" %%%%F in ^("%%TEMP_FILE%%"^) do ^(
+echo     if exist "%%%%F" ^(
 echo         set /a FileCount+=1
 echo         echo Processing: %%%%F
-echo.
+echo.        
 echo         echo. ^>^> "%%OUTPUT_FILE%%"
 echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
 echo         echo FILE: %%%%~nxF ^>^> "%%OUTPUT_FILE%%"
@@ -92,6 +115,10 @@ echo         echo. ^>^> "%%OUTPUT_FILE%%"
 echo     ^)
 echo ^)
 echo.
+echo :: Clean up the temporary file
+echo del /q "%%TEMP_FILE%%" 2^>nul
+echo.
+echo :end
 echo echo.
 echo echo Compilation complete!
 echo echo %%FileCount%% files have been compiled into:
