@@ -8,7 +8,7 @@ The `scriptcompile` command scans a directory (and its subdirectories) for scrip
 
 ## Installation
 
-1. Download the `install_scriptcompile.bat` script
+1. Download the `scriptcompile.bat` script
 2. Right-click the script and select "Run as administrator"
 3. The installation script will:
    - Create a `Scripts` folder in your user profile directory (if it doesn't exist)
