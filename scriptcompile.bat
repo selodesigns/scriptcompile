@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ===================================================
-echo ScriptCompile Command - Improved Installer
+echo ScriptCompile Command - Standalone Version
 echo ===================================================
 echo.
 
@@ -23,7 +23,7 @@ if not exist "%SCRIPT_DIR%" (
     mkdir "%SCRIPT_DIR%"
 )
 
-:: Create the scriptcompile.bat file
+:: Create the scriptcompile.bat file as a completely standalone solution
 set "SCRIPT_PATH=%SCRIPT_DIR%\scriptcompile.bat"
 echo Creating scriptcompile command...
 
@@ -34,7 +34,6 @@ echo.
 echo :: Set variables
 echo set "OUTPUT_FILE=%%CD%%\script_compilation.txt"
 echo set "START_DIR=%%CD%%"
-echo set "FILE_EXTENSIONS=*.bat *.cmd *.ps1 *.vbs *.js *.py *.sh *.pl *.php *.rb *.sql *.cs *.java *.cpp *.c *.h *.hpp"
 echo.
 echo :: Allow user to specify a different directory
 echo if not "%%~1"=="" ^(
@@ -50,57 +49,32 @@ echo if not "%%~2"=="" ^(
 echo     set "OUTPUT_FILE=%%~2"
 echo ^)
 echo.
-echo :: Allow user to specify file extensions
-echo if not "%%~3"=="" ^(
-echo     set "FILE_EXTENSIONS=%%~3"
-echo ^)
-echo.
-echo echo Script Compilation Tool
-echo echo ======================
-echo echo.
-echo echo Scanning directory: %%START_DIR%%
-echo echo Output will be saved to: %%OUTPUT_FILE%%
-echo echo Looking for file types: %%FILE_EXTENSIONS%%
-echo echo.
-echo.
 echo :: Create the output file with a header
 echo echo Script Compilation created on %%date%% at %%time%% ^> "%%OUTPUT_FILE%%"
 echo echo Source directory: %%START_DIR%% ^>^> "%%OUTPUT_FILE%%"
 echo echo ================================================================= ^>^> "%%OUTPUT_FILE%%"
 echo echo. ^>^> "%%OUTPUT_FILE%%"
 echo.
-echo :: Initialize counter
+echo :: Initialize file counter
 echo set "FileCount=0"
+echo set "TotalFiles=0"
 echo.
-echo :: Create a temporary file to store the list of files
-echo set "TEMP_FILE=%%TEMP%%\scriptcompile_filelist.txt"
-echo if exist "%%TEMP_FILE%%" del /q "%%TEMP_FILE%%"
+echo echo Script Compilation Tool
+echo echo ======================
+echo echo.
+echo echo Scanning directory: %%START_DIR%%
+echo echo Output will be saved to: %%OUTPUT_FILE%%
+echo echo.
 echo.
-echo :: Generate a list of files that actually exist
-echo for %%%%E in ^(%%FILE_EXTENSIONS%%^) do ^(
-echo     dir /b /s "%%START_DIR%%%%%%E" 2^>nul ^>^> "%%TEMP_FILE%%"
-echo ^)
+echo :: Process Python files
+echo echo Searching for .py files...
 echo.
-echo :: Check if we found any files
-echo if not exist "%%TEMP_FILE%%" ^(
-echo     echo No matching files found.
-echo     echo No matching files found. ^>^> "%%OUTPUT_FILE%%"
-echo     goto :end
-echo ^)
-echo.
-echo :: Check if the file is empty
-echo for /f "tokens=* usebackq" %%%%a in ^("%%TEMP_FILE%%"^) do goto :process_files
-echo echo No matching files found.
-echo echo No matching files found. ^>^> "%%OUTPUT_FILE%%"
-echo goto :end
-echo.
-echo :process_files
-echo :: Process each file in the list
-echo for /f "tokens=* usebackq delims=" %%%%F in ^("%%TEMP_FILE%%"^) do ^(
+echo for /r "%%START_DIR%%" %%%%F in ^(*.py^) do ^(
 echo     if exist "%%%%F" ^(
 echo         set /a FileCount+=1
-echo         echo Processing: %%%%F
-echo.        
+echo         set /a TotalFiles+=1
+echo         echo [!FileCount!] Processing: %%%%F
+echo.
 echo         echo. ^>^> "%%OUTPUT_FILE%%"
 echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
 echo         echo FILE: %%%%~nxF ^>^> "%%OUTPUT_FILE%%"
@@ -115,13 +89,105 @@ echo         echo. ^>^> "%%OUTPUT_FILE%%"
 echo     ^)
 echo ^)
 echo.
-echo :: Clean up the temporary file
-echo del /q "%%TEMP_FILE%%" 2^>nul
+echo :: Process JavaScript files
+echo echo Searching for .js files...
+echo set "FileCount=0"
 echo.
-echo :end
+echo for /r "%%START_DIR%%" %%%%F in ^(*.js^) do ^(
+echo     if exist "%%%%F" ^(
+echo         set /a FileCount+=1
+echo         set /a TotalFiles+=1
+echo         echo [!FileCount!] Processing: %%%%F
+echo.
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
+echo         echo FILE: %%%%~nxF ^>^> "%%OUTPUT_FILE%%"
+echo         echo PATH: %%%%~dpF ^>^> "%%OUTPUT_FILE%%"
+echo         echo SIZE: %%%%~zF bytes ^>^> "%%OUTPUT_FILE%%"
+echo         echo LAST MODIFIED: %%%%~tF ^>^> "%%OUTPUT_FILE%%"
+echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         type "%%%%F" ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo     ^)
+echo ^)
+echo.
+echo :: Process batch files
+echo echo Searching for .bat and .cmd files...
+echo set "FileCount=0"
+echo.
+echo for /r "%%START_DIR%%" %%%%F in ^(*.bat *.cmd^) do ^(
+echo     if exist "%%%%F" ^(
+echo         set /a FileCount+=1
+echo         set /a TotalFiles+=1
+echo         echo [!FileCount!] Processing: %%%%F
+echo.
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
+echo         echo FILE: %%%%~nxF ^>^> "%%OUTPUT_FILE%%"
+echo         echo PATH: %%%%~dpF ^>^> "%%OUTPUT_FILE%%"
+echo         echo SIZE: %%%%~zF bytes ^>^> "%%OUTPUT_FILE%%"
+echo         echo LAST MODIFIED: %%%%~tF ^>^> "%%OUTPUT_FILE%%"
+echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         type "%%%%F" ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo     ^)
+echo ^)
+echo.
+echo :: Process C/C++ files
+echo echo Searching for .c, .cpp, .h and .hpp files...
+echo set "FileCount=0"
+echo.
+echo for /r "%%START_DIR%%" %%%%F in ^(*.c *.cpp *.h *.hpp^) do ^(
+echo     if exist "%%%%F" ^(
+echo         set /a FileCount+=1
+echo         set /a TotalFiles+=1
+echo         echo [!FileCount!] Processing: %%%%F
+echo.
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
+echo         echo FILE: %%%%~nxF ^>^> "%%OUTPUT_FILE%%"
+echo         echo PATH: %%%%~dpF ^>^> "%%OUTPUT_FILE%%"
+echo         echo SIZE: %%%%~zF bytes ^>^> "%%OUTPUT_FILE%%"
+echo         echo LAST MODIFIED: %%%%~tF ^>^> "%%OUTPUT_FILE%%"
+echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         type "%%%%F" ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo     ^)
+echo ^)
+echo.
+echo :: Process other script files
+echo echo Searching for other script file types...
+echo set "FileCount=0"
+echo.
+echo for /r "%%START_DIR%%" %%%%F in ^(*.ps1 *.vbs *.sh *.pl *.php *.rb *.sql *.cs *.java *.tsx *.jsx *.ts^) do ^(
+echo     if exist "%%%%F" ^(
+echo         set /a FileCount+=1
+echo         set /a TotalFiles+=1
+echo         echo [!FileCount!] Processing: %%%%F
+echo.
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
+echo         echo FILE: %%%%~nxF ^>^> "%%OUTPUT_FILE%%"
+echo         echo PATH: %%%%~dpF ^>^> "%%OUTPUT_FILE%%"
+echo         echo SIZE: %%%%~zF bytes ^>^> "%%OUTPUT_FILE%%"
+echo         echo LAST MODIFIED: %%%%~tF ^>^> "%%OUTPUT_FILE%%"
+echo         echo ----------------------------------------------------------------- ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         type "%%%%F" ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo         echo. ^>^> "%%OUTPUT_FILE%%"
+echo     ^)
+echo ^)
+echo.
 echo echo.
 echo echo Compilation complete!
-echo echo %%FileCount%% files have been compiled into:
+echo echo !TotalFiles! files have been compiled into:
 echo echo %%OUTPUT_FILE%%
 ) > "%SCRIPT_PATH%"
 
@@ -164,10 +230,9 @@ if "%PATH_UPDATED%"=="1" (
 
 echo Usage examples:
 echo.
-echo   scriptcompile                               - Compile scripts from current directory
-echo   scriptcompile C:\path                       - Compile scripts from specified directory
-echo   scriptcompile C:\path output.txt            - Specify output filename
-echo   scriptcompile C:\path output.txt "*.js *.py" - Specify file types to include
+echo   scriptcompile                 - Compile scripts from current directory
+echo   scriptcompile C:\path         - Compile scripts from specified directory
+echo   scriptcompile C:\path output.txt - Specify output filename
 echo.
 echo Press any key to exit...
 pause > nul
