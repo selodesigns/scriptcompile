@@ -8,44 +8,50 @@ The `scriptcompile` command scans a directory (and its subdirectories) for scrip
 
 ## Installation
 
+### Windows
 1. Download the `scriptcompile.bat` script
 2. Right-click the script and select "Run as administrator"
 3. The installation script will:
    - Create a `Scripts` folder in your user profile directory (if it doesn't exist)
    - Set up the `scriptcompile.bat` command file
    - Add the Scripts folder to your PATH environment variable (if not already there)
-
 4. Restart any open command prompts for the changes to take effect
 
+### Linux
+1. Download `scriptcompile.sh` and `install-scriptcompile.sh`.
+2. Run the installer (requires sudo):
+   ```bash
+   sudo ./install-scriptcompile.sh
+   ```
+   This will copy the script to `/usr/local/bin/scriptcompile` and make it executable.
+3. You can now run `scriptcompile` from any directory in your terminal.
+
 ## Usage
+
+After installation, you can run the command from any directory:
 
 ### Basic Usage
 
 ```
 scriptcompile
 ```
-Compiles all script files from the current directory and saves to `script_compilation.txt`
+Compiles all supported script files from the current directory and saves to `script_compilation.txt`.
 
 ### Specify a Directory
 
 ```
-scriptcompile C:\path\to\directory
+scriptcompile /path/to/directory
 ```
-Compiles scripts from the specified directory
+Compiles scripts from the specified directory.
 
 ### Specify Output File
 
 ```
-scriptcompile C:\path\to\directory C:\path\to\output.txt
+scriptcompile /path/to/directory /path/to/output.txt
 ```
-Compiles scripts and saves to the specified output file
+Compiles scripts and saves to the specified output file.
 
-### Specify File Types
-
-```
-scriptcompile C:\path\to\directory output.txt "*.js *.py *.html"
-```
-Compiles only JavaScript, Python, and HTML files
+> On Windows, use backslashes in paths. On Linux, use forward slashes.
 
 ## Default File Types
 
