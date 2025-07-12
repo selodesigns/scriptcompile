@@ -1,4 +1,4 @@
-# ScriptCompile Command
+# ScriptCompile Command - Linux and Windows
 
 A Windows utility that compiles script files from a directory into a single, well-organized text document.
 
